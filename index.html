@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Giftastic!</title>
+		<style type="text/css">
+		button, div, form, input {
+			margin: 10px;
+		}
+	</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Gif-omania!</h1>
+  <div id="gifView"></div>
+
+  <form id="gif-form">
+    <label for="gif-input">Pick a Gif</label>
+    <input type="text" id="gif-input"><br>
+    
+    <input id="addGif" type="submit" value="Gif Search">
+  </form>
+  <div id="gifView"></div>
+
+<script src='http://code.jquery.com/jquery-2.1.3.min.js'></script>
+<script type="text/javascript">
+
+	var randomGif = ['Cat', 'Dog', 'Llama', 'Bear'];
+
+	function renderButtons(){ 
+		$('#gifView').empty();
+		for (var i = 0; i < randomGif.length; i++){
+		    var a = $('<button>') 
+		    a.addClass('gif'); 
+		    a.attr('data-name', randomGif[i]); 
+		    a.text(randomGif[i]); 
+		    $('#gifView').append(a); 
+		}
+
+		$('#addGif').on('click', function(){
+		var gif = $('#gif-input').val().trim();
+		randomGif.push(gif);
+		
+		renderButtons();
+		return false;
+	})
+
+	$(document).on('click', '.gif', alertGifName);
+
+	function displayGifInfo(){
+		var gif = $(this).attr('data-name');
+		var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + gif + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+		$.ajax({
+            url: queryURL,
+            method: 'GET'
+            })
+
+		.done(function(response) {
+                console.log(queryURL);
+                console.log(response)
+                var results = response.data;
+                for (var i = 0; i < results.length; i++) {
+                        
+             var gifDiv = $('<span id="gifDiv">');
+             var p = $('<p id="rating">');
+             p.text("Ratings: " + results[i].rating);
+
+             var gifImage = $('<img>', {
+              	class: 'gifImage',
+                attr: { 'data-state': 'active',
+                       'data-still': results[i].images.original_still.url,
+                        'data-animate': results[i].images.original.url,
+                        'src': results[i].images.fixed_width.url
+                }
+
+	 $(p).appendTo(gifDiv); 
+     $(gifImage).appendTo(gifDiv);
+	 $('#gifView').prepend(gifDiv);
+                    
+            });
+    };
+    $(document).on('click', '.gifImage', function(){
+	    var state = $(this).data('state'); 
+	    if(state == 'still'){
+                $(this).attr('src', $(this).data('animate'));
+                $(this).data('state', 'animate');
+            }else{
+                $(this).attr('src', $(this).data('still'));
+                $(this).data('state', 'still');
+            }
+    });
+
+	renderButtons();
+	
+	
+	}
+	</script>
+</body>
+</html>
